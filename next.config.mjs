@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/apps/eaif-trail-sd',
   typescript: {
     ignoreBuildErrors: true,
   },
