@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import type { PlayerStats } from "@/lib/game-types"
 import { Phone } from "lucide-react"
+import { getPeteCallCount } from "@/lib/journey-tracker"
 
 interface PeteCallScreenProps {
   stats: PlayerStats
@@ -40,9 +41,14 @@ export function PeteCallScreen({ stats, onDeath }: PeteCallScreenProps) {
   const [phase, setPhase] = useState<"ringing" | "choices" | "death">("ringing")
   const [chosenIndex, setChosenIndex] = useState<number | null>(null)
   const [ringCount, setRingCount] = useState(0)
+  const [peteCallCount, setPeteCallCount] = useState<number | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>(0)
   const timeRef = useRef<number>(0)
+
+  useEffect(() => {
+    getPeteCallCount().then(setPeteCallCount)
+  }, [])
 
   useEffect(() => {
     if (phase === "ringing") {
@@ -302,6 +308,11 @@ export function PeteCallScreen({ stats, onDeath }: PeteCallScreenProps) {
                 />
               ))}
             </div>
+            {peteCallCount !== null && peteCallCount > 0 && (
+              <p className="text-[#e74c3c]/70 text-xs italic mt-2">
+                Pete has interrupted {peteCallCount} {peteCallCount === 1 ? "journey" : "journeys"} so far.
+              </p>
+            )}
           </div>
         )}
 

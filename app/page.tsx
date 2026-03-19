@@ -10,6 +10,7 @@ import { VictoryScreen } from "@/components/victory-screen"
 import { PeteCallScreen } from "@/components/pete-call-screen"
 import type { GameState, GameScene, PlayerStats } from "@/lib/game-types"
 import { getSceneData } from "@/lib/game-scenes"
+import { incrementPeteCallCount } from "@/lib/journey-tracker"
 
 const INITIAL_STATS: PlayerStats = {
   energy: 100,
@@ -106,6 +107,7 @@ export default function EdgeAITrail() {
         if (peteCallTargetScene && choice.nextScene === peteCallTargetScene && !peteCallTriggered) {
           setPeteCallTriggered(true)
           setPeteCallActive(true)
+          incrementPeteCallCount()
           // Store the intended next scene so we don't lose it (though Pete always kills you)
           return
         }
