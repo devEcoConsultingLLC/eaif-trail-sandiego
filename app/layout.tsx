@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import localFont from "next/font/local"
 import "./globals.css"
+import { TopBanner } from "@/components/top-banner"
 
 const poppins = localFont({
   src: [
@@ -44,41 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.className} antialiased`}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            height: "38px",
-            backgroundColor: "#0a0a0a",
-            borderBottom: "1px solid rgba(55, 138, 139, 0.3)",
-            fontSize: "12px",
-            letterSpacing: "0.02em",
-            flexShrink: 0,
-          }}
-        >
-          <a
-            href="https://thedeveco.com/consultancy"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            <span style={{ color: "#999" }}>Experience by </span>
-            <span style={{ color: "#5fb3b4", fontWeight: 600 }}>devEco</span>
-            <span style={{ color: "#999" }}> Consulting LLC</span>
-          </a>
-          <span style={{ color: "#999" }}>|</span>
-          <a
-            href="https://site.pheedloop.com/event/sandiego2026/home/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            <span style={{ color: "#999" }}>Register for </span>
-            <span style={{ color: "#5fb3b4", fontWeight: 600 }}>EDGE AI San Diego</span>
-          </a>
-        </div>
+        <TopBanner />
         {children}
       </body>
     </html>

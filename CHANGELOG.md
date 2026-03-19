@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Admin dashboard: subtle 🔒 icon in banner opens login modal, authenticated users get a full-screen admin panel
+- Admin login modal (`components/admin-login.tsx`) using Supabase Auth `signInWithPassword`
+- Admin panel (`components/admin-panel.tsx`) with full leaderboard view and per-entry delete with confirmation
+- Auth state management in `components/top-banner.tsx` via `getSession` and `onAuthStateChange`
 - Unified scoring formula in `lib/leaderboard.ts` (`calculateScore`) used by both victory screen and leaderboard submission
 - Score breakdown display on victory screen showing each bonus, role multiplier, and total
 
@@ -17,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Leaderboard expanded from top 10 to top 100 on both title and victory screens
 - Leaderboard tables are now scrollable (`max-h-96` with `overflow-y-auto`)
 - Scoring formula unified: base 1000 + energy×5 + knowledge×20 + connections×50 + money×2 + (100−stress)×3 + items×25, with role multiplier (dev 1.0×, researcher 1.5×, exec 0.8×)
+- Banner extracted to client component `components/top-banner.tsx` (was inline in server layout)
 
 ## [0.1.0] - 2026-03-19
 
