@@ -63,13 +63,18 @@ The built `out/` directory is copied into the [thedeveco.com](https://thedeveco.
 - `increment_journey_count()` — atomically increments `journey_count.count`
 - `increment_pete_calls()` — atomically increments `journey_count.pete_calls`
 
-### Score Calculation (leaderboard)
+### Score Calculation (unified)
+
+Single source of truth in `lib/leaderboard.ts` → `calculateScore()`:
 
 ```
-score = knowledge + connections + (money / 10) + (100 - stress) + energy
+subtotal = 1000 + energy×5 + knowledge×20 + connections×50 + money×2 + (100−stress)×3 + items.length×25
+score = round(subtotal × roleMultiplier)
 ```
 
-(See `lib/leaderboard.ts` — the victory screen uses a different, more elaborate formula for display.)
+Role multipliers: developer 1.0×, researcher 1.5×, executive 0.8×
+
+The victory screen imports `calculateScore` and displays a full breakdown. The leaderboard `submitScore` uses the same function.
 
 ## Key Architecture Decisions
 
