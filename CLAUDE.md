@@ -75,7 +75,7 @@ score = knowledge + connections + (money / 10) + (100 - stress) + energy
 
 - **Local fonts:** Poppins `.ttf` files in `app/fonts/` loaded via `next/font/local` to avoid network dependencies and ensure reliable offline/static builds
 - **No Vercel:** Static export to GitHub Pages, no Vercel-specific features
-- **devEco banner:** `layout.tsx` includes a branded top banner linking to `https://thedeveco.com/consultancy`
+- **devEco banner:** `layout.tsx` includes a branded top banner with two links — "Experience by devEco Consulting LLC" linking to `https://thedeveco.com/consultancy` and "Register for EDGE AI San Diego" linking to the PheedLoop registration page
 - **Canvas rendering:** Game scenes and the Pete call screen use `<canvas>` with `requestAnimationFrame` for pixel-art style animations
 - **Client-side only:** All game state managed with React `useState`/`useCallback` in `app/page.tsx`
 
