@@ -61,7 +61,7 @@ export default function RootLayout({
             flexShrink: 0,
           }}
         >
-          <span style={{ color: "#999" }}>An Experience by </span>
+          <span style={{ color: "#999" }}>An Experience by&nbsp;</span>
           <span style={{ color: "#5fb3b4", fontWeight: 600 }}>devEco</span>
           <span style={{ color: "#999" }}> Consulting LLC</span>
         </a>
