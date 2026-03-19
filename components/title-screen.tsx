@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { getJourneyCount, incrementJourneyCount } from "@/lib/journey-tracker"
+import { getLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard"
 
 interface TitleScreenProps {
   onStart: (name: string, role: "developer" | "researcher" | "executive") => void
@@ -11,7 +13,29 @@ interface TitleScreenProps {
 export function TitleScreen({ onStart }: TitleScreenProps) {
   const [name, setName] = useState("")
   const [role, setRole] = useState<"developer" | "researcher" | "executive" | null>(null)
-  const [step, setStep] = useState<"intro" | "name" | "role">("intro")
+  const [step, setStep] = useState<"intro" | "name" | "role" | "leaderboard">("intro")
+  const [journeyCount, setJourneyCount] = useState<number | null>(null)
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
+
+  useEffect(() => {
+    getJourneyCount().then((count) => {
+      if (count > 0) setJourneyCount(count)
+    })
+  }, [])
+
+  const handleBeginJourney = async () => {
+    incrementJourneyCount()
+    setStep("name")
+  }
+
+  const handleViewLeaderboard = async () => {
+    setLoadingLeaderboard(true)
+    const entries = await getLeaderboard(10)
+    setLeaderboard(entries)
+    setLoadingLeaderboard(false)
+    setStep("leaderboard")
+  }
 
   const roles = [
     {
@@ -60,13 +84,73 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
               </p>
             </div>
 
-            <Button
-              onClick={() => setStep("name")}
-              className="bg-[#00e7ad] hover:bg-[#42fffe] text-[#004e53] font-bold px-8 py-6 text-lg rounded-lg transition-all hover:scale-105"
-            >
-              Begin Your Journey →
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                onClick={handleBeginJourney}
+                className="bg-[#00e7ad] hover:bg-[#42fffe] text-[#004e53] font-bold px-8 py-6 text-lg rounded-lg transition-all hover:scale-105"
+              >
+                Begin Your Journey →
+              </Button>
+
+              {journeyCount !== null && (
+                <p className="text-[#787878] text-sm">{journeyCount.toLocaleString()} journeys taken so far</p>
+              )}
+
+              <button
+                onClick={handleViewLeaderboard}
+                className="text-[#42fffe] hover:text-[#00e7ad] text-sm underline underline-offset-4 transition-colors mt-1"
+              >
+                View Leaderboard 🏆
+              </button>
+            </div>
           </>
+        )}
+
+        {step === "leaderboard" && (
+          <div className="space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#00e7ad]">🏆 Leaderboard</h2>
+
+            {loadingLeaderboard ? (
+              <p className="text-[#787878]">Loading...</p>
+            ) : leaderboard.length === 0 ? (
+              <div className="bg-black/30 rounded-xl p-6 border border-[#00e7ad]/30">
+                <p className="text-[#787878]">No scores yet. Be the first to complete the trail!</p>
+              </div>
+            ) : (
+              <div className="bg-black/30 rounded-xl border border-[#00e7ad]/30 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#00e7ad]/20">
+                      <th className="px-4 py-3 text-[#787878] font-medium">#</th>
+                      <th className="px-4 py-3 text-[#787878] font-medium">Player</th>
+                      <th className="px-4 py-3 text-[#787878] font-medium text-right">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboard.map((entry, i) => (
+                      <tr key={entry.id} className="border-b border-[#00e7ad]/10 last:border-0">
+                        <td className="px-4 py-3 text-[#42fffe] font-bold">
+                          {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-[#F0F0F0] font-medium">{entry.player_name}</div>
+                          <div className="text-[#787878] text-xs capitalize">{entry.player_role}</div>
+                        </td>
+                        <td className="px-4 py-3 text-right text-[#fffe01] font-bold">{entry.score.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <Button
+              onClick={() => setStep("intro")}
+              className="bg-[#1b357d] hover:bg-[#5f2bef] text-white font-bold px-6 py-3 rounded-lg"
+            >
+              ← Back
+            </Button>
+          </div>
         )}
 
         {step === "name" && (
