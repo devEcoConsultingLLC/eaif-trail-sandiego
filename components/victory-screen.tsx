@@ -2,7 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import type { PlayerStats } from "@/lib/game-types"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import { submitScore } from "@/lib/leaderboard"
+import { getLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard"
 
 interface VictoryScreenProps {
   stats: PlayerStats
@@ -13,6 +15,9 @@ interface VictoryScreenProps {
 
 export function VictoryScreen({ stats, playerName, playerRole, onRestart }: VictoryScreenProps) {
   const [score, setScore] = useState(0)
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const submitted = useRef(false)
 
   useEffect(() => {
     // Calculate score
@@ -44,8 +49,20 @@ export function VictoryScreen({ stats, playerName, playerRole, onRestart }: Vict
       }
     }, 30)
 
+    // Submit score to leaderboard (once)
+    if (!submitted.current) {
+      submitted.current = true
+      submitScore(playerName, playerRole, stats)
+    }
+
     return () => clearInterval(interval)
-  }, [stats, playerRole])
+  }, [stats, playerRole, playerName])
+
+  const handleShowLeaderboard = async () => {
+    const entries = await getLeaderboard(10)
+    setLeaderboard(entries)
+    setShowLeaderboard(true)
+  }
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 text-white font-[Poppins] overflow-hidden relative">
@@ -111,6 +128,47 @@ export function VictoryScreen({ stats, playerName, playerRole, onRestart }: Vict
             </div>
           )}
         </div>
+
+        {/* Leaderboard section */}
+        {!showLeaderboard ? (
+          <button
+            onClick={handleShowLeaderboard}
+            className="text-[#42fffe] hover:text-[#00e7ad] text-sm underline underline-offset-4 transition-colors"
+          >
+            View Leaderboard 🏆
+          </button>
+        ) : (
+          <div className="bg-black/30 rounded-xl border border-[#00e7ad]/30 overflow-hidden">
+            <div className="px-4 py-3 border-b border-[#00e7ad]/20">
+              <h3 className="text-[#00e7ad] font-bold text-sm">🏆 Top 10 Scores</h3>
+            </div>
+            {leaderboard.length === 0 ? (
+              <p className="text-[#787878] text-sm p-4">No scores yet.</p>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <tbody>
+                  {leaderboard.map((entry, i) => (
+                    <tr
+                      key={entry.id}
+                      className={`border-b border-[#00e7ad]/10 last:border-0 ${
+                        entry.player_name === playerName ? "bg-[#00e7ad]/10" : ""
+                      }`}
+                    >
+                      <td className="px-4 py-2 text-[#42fffe] font-bold w-10">
+                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className="text-[#F0F0F0]">{entry.player_name}</span>
+                        <span className="text-[#787878] text-xs ml-2 capitalize">{entry.player_role}</span>
+                      </td>
+                      <td className="px-4 py-2 text-right text-[#fffe01] font-bold">{entry.score.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
 
         <div className="bg-[#5f2bef]/20 rounded-lg p-4 border border-[#5f2bef]/30">
           <p className="text-[#F0F0F0] text-sm">
