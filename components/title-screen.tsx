@@ -31,7 +31,7 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
 
   const handleViewLeaderboard = async () => {
     setLoadingLeaderboard(true)
-    const entries = await getLeaderboard(10)
+    const entries = await getLeaderboard(100)
     setLeaderboard(entries)
     setLoadingLeaderboard(false)
     setStep("leaderboard")
@@ -108,7 +108,7 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
 
         {step === "leaderboard" && (
           <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#00e7ad]">🏆 Leaderboard</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#00e7ad]">🏆 Top 100 Scores</h2>
 
             {loadingLeaderboard ? (
               <p className="text-[#787878]">Loading...</p>
@@ -118,6 +118,7 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
               </div>
             ) : (
               <div className="bg-black/30 rounded-xl border border-[#00e7ad]/30 overflow-hidden">
+                <div className="max-h-96 overflow-y-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-[#00e7ad]/20">
@@ -141,6 +142,7 @@ export function TitleScreen({ onStart }: TitleScreenProps) {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
 

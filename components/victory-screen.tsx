@@ -2,9 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import type { PlayerStats } from "@/lib/game-types"
-import { useEffect, useState, useRef } from "react"
-import { submitScore } from "@/lib/leaderboard"
-import { getLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard"
+import { useEffect, useState, useRef, useMemo } from "react"
+import { submitScore, getLeaderboard, calculateScore, type LeaderboardEntry } from "@/lib/leaderboard"
 
 interface VictoryScreenProps {
   stats: PlayerStats
@@ -14,38 +13,24 @@ interface VictoryScreenProps {
 }
 
 export function VictoryScreen({ stats, playerName, playerRole, onRestart }: VictoryScreenProps) {
-  const [score, setScore] = useState(0)
+  const [animatedScore, setAnimatedScore] = useState(0)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const submitted = useRef(false)
 
+  const breakdown = useMemo(() => calculateScore(stats, playerRole), [stats, playerRole])
+
   useEffect(() => {
-    // Calculate score
-    const baseScore = 1000
-    const energyBonus = stats.energy * 5
-    const stressDeduction = stats.stress * 3
-    const moneyBonus = stats.money * 2
-    const knowledgeBonus = stats.knowledge * 20
-    const connectionBonus = stats.connections * 50
-    const itemBonus = stats.items.length * 25
-
-    const roleMultiplier = playerRole === "developer" ? 1 : playerRole === "researcher" ? 1.5 : 0.8
-
-    const finalScore = Math.round(
-      (baseScore + energyBonus - stressDeduction + moneyBonus + knowledgeBonus + connectionBonus + itemBonus) *
-        roleMultiplier,
-    )
-
     // Animate score
     let current = 0
-    const step = finalScore / 50
+    const step = breakdown.total / 50
     const interval = setInterval(() => {
       current += step
-      if (current >= finalScore) {
-        setScore(finalScore)
+      if (current >= breakdown.total) {
+        setAnimatedScore(breakdown.total)
         clearInterval(interval)
       } else {
-        setScore(Math.round(current))
+        setAnimatedScore(Math.round(current))
       }
     }, 30)
 
@@ -56,10 +41,10 @@ export function VictoryScreen({ stats, playerName, playerRole, onRestart }: Vict
     }
 
     return () => clearInterval(interval)
-  }, [stats, playerRole, playerName])
+  }, [breakdown, playerRole, playerName, stats])
 
   const handleShowLeaderboard = async () => {
-    const entries = await getLeaderboard(10)
+    const entries = await getLeaderboard(100)
     setLeaderboard(entries)
     setShowLeaderboard(true)
   }
@@ -97,7 +82,21 @@ export function VictoryScreen({ stats, playerName, playerRole, onRestart }: Vict
 
           <div className="text-center py-4">
             <div className="text-[#787878] text-sm mb-2">FINAL SCORE</div>
-            <div className="text-5xl font-bold text-[#fffe01]">{score.toLocaleString()}</div>
+            <div className="text-5xl font-bold text-[#fffe01]">{animatedScore.toLocaleString()}</div>
+          </div>
+
+          {/* Score breakdown */}
+          <div className="text-left text-xs space-y-1 border-t border-[#787878]/30 pt-3">
+            <div className="text-[#787878] font-medium mb-2 text-center uppercase tracking-wider">Score Breakdown</div>
+            <div className="flex justify-between"><span className="text-[#787878]">Base Score</span><span className="text-[#F0F0F0]">+{breakdown.base}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Energy Bonus</span><span className="text-[#00e7ad]">+{breakdown.energyBonus}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Knowledge Bonus</span><span className="text-[#42fffe]">+{breakdown.knowledgeBonus}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Connections Bonus</span><span className="text-[#5f2bef]">+{breakdown.connectionsBonus}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Money Bonus</span><span className="text-[#fffe01]">+{breakdown.moneyBonus}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Low Stress Bonus</span><span className="text-[#00e7ad]">+{breakdown.stressBonus}</span></div>
+            <div className="flex justify-between"><span className="text-[#787878]">Item Bonus ({stats.items.length} items)</span><span className="text-[#42fffe]">+{breakdown.itemBonus}</span></div>
+            <div className="flex justify-between border-t border-[#787878]/30 pt-1 mt-1"><span className="text-[#787878]">Role Multiplier <span className="capitalize">({playerRole})</span></span><span className="text-[#F0F0F0] font-bold">×{breakdown.roleMultiplier}</span></div>
+            <div className="flex justify-between border-t border-[#00e7ad]/30 pt-2 mt-1"><span className="text-[#00e7ad] font-bold">TOTAL</span><span className="text-[#fffe01] font-bold">{breakdown.total.toLocaleString()}</span></div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-sm">
@@ -140,32 +139,34 @@ export function VictoryScreen({ stats, playerName, playerRole, onRestart }: Vict
         ) : (
           <div className="bg-black/30 rounded-xl border border-[#00e7ad]/30 overflow-hidden">
             <div className="px-4 py-3 border-b border-[#00e7ad]/20">
-              <h3 className="text-[#00e7ad] font-bold text-sm">🏆 Top 10 Scores</h3>
+              <h3 className="text-[#00e7ad] font-bold text-sm">🏆 Top 100 Scores</h3>
             </div>
             {leaderboard.length === 0 ? (
               <p className="text-[#787878] text-sm p-4">No scores yet.</p>
             ) : (
-              <table className="w-full text-left text-sm">
-                <tbody>
-                  {leaderboard.map((entry, i) => (
-                    <tr
-                      key={entry.id}
-                      className={`border-b border-[#00e7ad]/10 last:border-0 ${
-                        entry.player_name === playerName ? "bg-[#00e7ad]/10" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-2 text-[#42fffe] font-bold w-10">
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className="text-[#F0F0F0]">{entry.player_name}</span>
-                        <span className="text-[#787878] text-xs ml-2 capitalize">{entry.player_role}</span>
-                      </td>
-                      <td className="px-4 py-2 text-right text-[#fffe01] font-bold">{entry.score.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="max-h-96 overflow-y-auto">
+                <table className="w-full text-left text-sm">
+                  <tbody>
+                    {leaderboard.map((entry, i) => (
+                      <tr
+                        key={entry.id}
+                        className={`border-b border-[#00e7ad]/10 last:border-0 ${
+                          entry.player_name === playerName ? "bg-[#00e7ad]/10" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-2 text-[#42fffe] font-bold w-10">
+                          {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className="text-[#F0F0F0]">{entry.player_name}</span>
+                          <span className="text-[#787878] text-xs ml-2 capitalize">{entry.player_role}</span>
+                        </td>
+                        <td className="px-4 py-2 text-right text-[#fffe01] font-bold">{entry.score.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}

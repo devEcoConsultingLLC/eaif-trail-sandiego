@@ -14,10 +14,48 @@ export interface LeaderboardEntry {
   created_at: string
 }
 
-function calculateScore(stats: PlayerStats): number {
-  return Math.round(
-    stats.knowledge + stats.connections + stats.money / 10 + (100 - stats.stress) + stats.energy
-  )
+export interface ScoreBreakdown {
+  base: number
+  energyBonus: number
+  knowledgeBonus: number
+  connectionsBonus: number
+  moneyBonus: number
+  stressBonus: number
+  itemBonus: number
+  roleMultiplier: number
+  total: number
+}
+
+export function calculateScore(
+  stats: PlayerStats,
+  playerRole: string
+): ScoreBreakdown {
+  const base = 1000
+  const energyBonus = stats.energy * 5
+  const knowledgeBonus = stats.knowledge * 20
+  const connectionsBonus = stats.connections * 50
+  const moneyBonus = stats.money * 2
+  const stressBonus = (100 - stats.stress) * 3
+  const itemBonus = stats.items.length * 25
+
+  const roleMultiplier =
+    playerRole === "developer" ? 1.0 : playerRole === "researcher" ? 1.5 : 0.8
+
+  const subtotal =
+    base + energyBonus + knowledgeBonus + connectionsBonus + moneyBonus + stressBonus + itemBonus
+  const total = Math.round(subtotal * roleMultiplier)
+
+  return {
+    base,
+    energyBonus,
+    knowledgeBonus,
+    connectionsBonus,
+    moneyBonus,
+    stressBonus,
+    itemBonus,
+    roleMultiplier,
+    total,
+  }
 }
 
 export async function submitScore(
@@ -26,7 +64,7 @@ export async function submitScore(
   stats: PlayerStats
 ): Promise<void> {
   try {
-    const score = calculateScore(stats)
+    const { total: score } = calculateScore(stats, playerRole)
     await supabase.from("leaderboard").insert({
       player_name: playerName,
       player_role: playerRole,
@@ -42,7 +80,7 @@ export async function submitScore(
   }
 }
 
-export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+export async function getLeaderboard(limit = 100): Promise<LeaderboardEntry[]> {
   try {
     const { data, error } = await supabase
       .from("leaderboard")

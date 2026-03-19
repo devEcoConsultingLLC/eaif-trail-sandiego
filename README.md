@@ -97,7 +97,14 @@ CREATE POLICY "Allow public insert" ON leaderboard FOR INSERT WITH CHECK (true);
 
 ### Score Calculation
 
-Leaderboard score: `knowledge + connections + (money / 10) + (100 - stress) + energy`
+Unified formula (single source of truth in `lib/leaderboard.ts`):
+
+```
+subtotal = 1000 + energy×5 + knowledge×20 + connections×50 + money×2 + (100−stress)×3 + items×25
+score = round(subtotal × roleMultiplier)
+```
+
+Role multipliers: developer 1.0×, researcher 1.5×, executive 0.8×
 
 ## Game Mechanics
 
