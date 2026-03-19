@@ -115,6 +115,16 @@ styles/
   globals.css         — Alternate globals (appears unused, app/globals.css is primary)
 
 public/               — Favicons, placeholder images
+
+Root files:
+  next.config.mjs     — Static export, basePath, image + TS config
+  package.json        — Dependencies and scripts (pnpm)
+  pnpm-lock.yaml      — Lockfile (committed)
+  tsconfig.json       — TypeScript config (path aliases: @/*)
+  postcss.config.mjs  — Tailwind CSS via @tailwindcss/postcss
+  components.json     — shadcn/ui config (New York style, lucide icons)
+  .gitignore          — Ignores node_modules/, .next/, out/
+  LICENSE.md          — Project license
 ```
 
 ## Game Mechanics
@@ -134,6 +144,9 @@ public/               — Favicons, placeholder images
 - Supabase errors must never break gameplay (all calls wrapped in try/catch)
 - The `typescript.ignoreBuildErrors: true` flag is set in next.config.mjs
 - Images are unoptimized (`images.unoptimized: true`) for static export compatibility
+- `styles/globals.css` exists but is unused; `app/globals.css` is the active stylesheet
+- `pnpm-lock.yaml` is committed to the repo
+- `@vercel/analytics` remains in `package.json` but is not imported anywhere
 
 ## Session End Checklist
 
