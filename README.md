@@ -12,7 +12,7 @@ Built by [devEco Consulting LLC](https://thedeveco.com).
 - **React 19** + TypeScript 5
 - **Tailwind CSS 4** (via `@tailwindcss/postcss`)
 - **shadcn/ui** (New York style) + Radix UI + Lucide icons
-- **Supabase** for journey counter and leaderboard
+- **Supabase** for journey counter, leaderboard, and admin auth
 - **Poppins** font (local files, no network dependency)
 
 ## Getting Started
@@ -89,11 +89,18 @@ Enable Row Level Security on both tables, then add policies:
 ALTER TABLE journey_count ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read" ON journey_count FOR SELECT USING (true);
 
--- leaderboard: anyone can read and insert
+-- leaderboard: anyone can read and insert; only authenticated users can delete
 ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read" ON leaderboard FOR SELECT USING (true);
 CREATE POLICY "Allow public insert" ON leaderboard FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow authenticated delete" ON leaderboard FOR DELETE USING (auth.role() = 'authenticated');
 ```
+
+### Admin Dashboard
+
+A subtle 🔒 icon in the top-right corner of the banner opens the admin login. Authenticated users (via Supabase Auth email/password) can access a full-screen admin panel to view and delete leaderboard entries. RLS ensures only authenticated users can delete rows.
+
+To create an admin user, use the Supabase Dashboard → Authentication → Add User.
 
 ### Score Calculation
 

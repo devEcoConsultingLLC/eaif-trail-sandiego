@@ -34,6 +34,7 @@ The built `out/` directory is copied into the [thedeveco.com](https://thedeveco.
 
 - **Project URL:** `https://ypqxplnatfnrcooufpax.supabase.co`
 - **Client:** Initialized in `lib/supabase.ts` with the anon (publishable) key
+- **Auth:** Supabase Auth used for admin login (`signInWithPassword`). Admin session checked on load and via `onAuthStateChange`.
 - **Graceful degradation:** All Supabase calls are wrapped in try/catch. The game works fully offline — Supabase failures must never break gameplay.
 
 ### Database Tables
@@ -80,7 +81,7 @@ The victory screen imports `calculateScore` and displays a full breakdown. The l
 
 - **Local fonts:** Poppins `.ttf` files in `app/fonts/` loaded via `next/font/local` to avoid network dependencies and ensure reliable offline/static builds
 - **No Vercel:** Static export to GitHub Pages, no Vercel-specific features
-- **devEco banner:** `layout.tsx` includes a branded top banner with two links — "Experience by devEco Consulting LLC" linking to `https://thedeveco.com/consultancy` and "Register for EDGE AI San Diego" linking to the PheedLoop registration page
+- **devEco banner:** `components/top-banner.tsx` (client component) renders the branded banner with two links, a subtle admin lock icon, and manages auth state for the admin dashboard
 - **Canvas rendering:** Game scenes and the Pete call screen use `<canvas>` with `requestAnimationFrame` for pixel-art style animations
 - **Client-side only:** All game state managed with React `useState`/`useCallback` in `app/page.tsx`
 
@@ -94,11 +95,14 @@ app/
   fonts/              — Poppins .ttf files (Regular, Medium, SemiBold, Bold)
 
 components/
+  top-banner.tsx      — Branded banner with auth state, login/admin triggers
+  admin-login.tsx     — Admin login modal (Supabase Auth)
+  admin-panel.tsx     — Full-screen admin dashboard with leaderboard management
   title-screen.tsx    — Intro, name/role selection, journey counter, leaderboard
   game-canvas.tsx     — Pixel-art canvas renderer for each scene
   game-ui.tsx         — Stats bar, scene text, choices, inventory
   game-over-screen.tsx — Death/failure screen (includes Pete death detection)
-  victory-screen.tsx  — Win screen, score animation, leaderboard, score submission
+  victory-screen.tsx  — Win screen, score breakdown, leaderboard, score submission
   pete-call-screen.tsx — Pete Bernard call Easter egg with canvas animation
   countdown-timer.tsx — Live countdown to EDGE AI San Diego 2026
   theme-provider.tsx  — next-themes wrapper (unused currently)
@@ -107,7 +111,7 @@ components/
 lib/
   supabase.ts         — Supabase client initialization
   journey-tracker.ts  — getJourneyCount, incrementJourneyCount, getPeteCallCount, incrementPeteCallCount
-  leaderboard.ts      — submitScore, getLeaderboard, LeaderboardEntry type
+  leaderboard.ts      — calculateScore, submitScore, getLeaderboard, ScoreBreakdown, LeaderboardEntry
   game-scenes.ts      — Scene data: titles, descriptions, choices, effects, transitions
   game-types.ts       — TypeScript types: GameScene, GameState, PlayerStats, Choice, SceneData
   utils.ts            — cn() helper (clsx + tailwind-merge)
